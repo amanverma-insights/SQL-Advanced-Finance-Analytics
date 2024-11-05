@@ -1,1 +1,0 @@
-# SQL-Advanced-Finance-Analytics
