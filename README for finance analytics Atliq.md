@@ -1,5 +1,5 @@
 # SQL-Advanced-Finance-Analytics
-s
+
 
 This repository contains SQL scripts and stored procedures developed for advanced finance analytics, focusing on data retrieval, gross sales reporting, and market classification.
 
