@@ -23,7 +23,32 @@
         	RETURN fiscal_year;
 	END
 
--- 4. Replacing the function created in the step:b
+-- 4. create a fucntion for `get_fiscal_quarter to get the quarter of fiscal years
+	CREATE FUNCTION `get_fiscal_quarter` (
+	calender_date date
+	)
+	RETURNS char(2)
+	DETERMINISTIC
+	BEGIN
+		declare m tinyint;
+	    	declare qtr char(2);
+		set m = month (calender_date);
+	    
+	    CASE 
+			WHEN m IN (9, 10, 11) THEN
+	        SET qtr = 'Q1';
+	        WHEN m IN (12, 1, 2) THEN
+	        SET qtr = 'Q2';
+	        WHEN m IN (3, 4, 5) THEN
+	        SET qtr = 'Q3';
+	        ELSE 
+	        SET qtr = 'Q4';
+	    END CASE;  
+		RETURN qtr;
+	   END;
+
+
+-- 5. Replacing the function created in the step:b
 	SELECT * FROM fact_sales_monthly 
 	WHERE 
             customer_code=90002002 AND
@@ -64,6 +89,48 @@
     	    customer_code=90002002 AND 
             get_fiscal_year(s.date)=2021     
 	LIMIT 1000000;
+
+-- 3. 3. Generate a yearly report for Croma India where there are two columns
+3.1. Fiscal Year
+3.2. Total Gross Sales amount In that year from Croma
+
+	SELECT 
+	    get_fiscal_year(s.date) AS fiscal_year,
+	    c.market,
+	    SUM(g.gross_price * s.sold_quantity) AS total_sold_quantity
+	FROM 
+	    fact_sales_monthly s
+	JOIN 
+	    fact_gross_price g ON g.product_code = s.product_code 
+	    AND g.fiscal_year = get_fiscal_year(s.date)
+	JOIN 
+	    dim_customer c ON c.customer_code = s.customer_code 
+	WHERE 
+	    c.market = 'India' and
+	    c.customer = 'Croma'
+	GROUP BY 
+	    fiscal_year
+	ORDER BY 
+	    fiscal_year ASC;
+
+				--or--
+
+	select
+	            get_fiscal_year(date) as fiscal_year,
+	            
+	            sum(round(sold_quantity*g.gross_price,2)) as yearly_sales
+		from fact_sales_monthly s
+		join fact_gross_price g
+		on 
+		    g.fiscal_year=get_fiscal_year(s.date) and
+		    g.product_code=s.product_code
+		where
+		    customer_code=90002002
+		group by get_fiscal_year(date)
+		order by fiscal_year;
+		
+
+
 
 
 
